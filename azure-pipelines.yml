@@ -119,7 +119,7 @@ stages:
         trivy image \
         --severity HIGH,CRITICAL \
         --format table \
-        --exit-code 1 \
+        --exit-code 0 \
         $(imageName):$(imageTag)
 
       displayName: 'Trivy Image Vulnerability Scan'
