@@ -4,18 +4,45 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- checkout: self
+stages:
 
-- task: Maven@4
+- stage: Build
   displayName: 'Build Spring Boot Application'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    goals: 'clean package'
+  jobs:
+  - job: MavenBuild
+    displayName: 'Maven Build'
+    steps:
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish JAR Artifact'
-  inputs:
-    PathtoPublish: 'target'
-    ArtifactName: 'spring-boot-app'
-    publishLocation: 'Container'
+    - checkout: self
+
+    - task: Maven@4
+      displayName: 'Build Application'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish JAR Artifact'
+      inputs:
+        PathtoPublish: 'target'
+        ArtifactName: 'spring-boot-app'
+        publishLocation: 'Container'
+
+
+- stage: DockerBuild
+  displayName: 'Build Docker Image'
+  dependsOn: Build
+  jobs:
+  - job: Docker
+    displayName: 'Docker Build'
+    steps:
+
+    - checkout: self
+
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: build
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          assessment-app:$(Build.BuildId)
