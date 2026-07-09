@@ -15,7 +15,7 @@ RUN apt-get update \
        maven \
     && rm -rf /var/lib/apt/lists/*
 
-# Docker CLI, so pipeline steps can build/push images using the host's Docker daemon
+# Docker CLI
 RUN curl -fsSL https://get.docker.com | sh
 
 WORKDIR /azp
