@@ -2,7 +2,7 @@ trigger:
   - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: docker-agent-pool
 
 variables:
   imageName: 'nourhankhalidd/assessment'
