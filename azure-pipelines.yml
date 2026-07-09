@@ -2,7 +2,9 @@ trigger:
   - main
 
 pool:
-  name: docker-agent-pool
+  name: Self-hosted-agent
+
+
 
 variables:
   imageName: 'nourhankhalidd/assessment'
