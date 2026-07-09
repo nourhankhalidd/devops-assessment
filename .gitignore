@@ -48,3 +48,6 @@ Thumbs.db
 
 # Temporary Files
 *.tmp
+
+# Secret file
+kubernetes/secret.yaml

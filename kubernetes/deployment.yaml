@@ -23,6 +23,13 @@ spec:
       - name: assessment
         image: nourhankhalidd/assessment:latest
 
+        env:
+         - name: APP_SECRET
+           valueFrom:
+             secretKeyRef:
+               name: assessment-secret
+               key: APP_SECRET
+
         imagePullPolicy: Always
 
         ports:
