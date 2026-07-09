@@ -4,15 +4,15 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-
 variables:
   imageName: 'nourhankhalidd/assessment'
   imageTag: 'build-$(Build.BuildId)'
 
-
 stages:
 
-
+# ==========================
+# Build Stage
+# ==========================
 - stage: Build
   displayName: 'Build Spring Boot Application'
 
@@ -24,7 +24,6 @@ stages:
 
     - checkout: self
 
-
     # Maven Cache
     - task: Cache@2
       displayName: 'Cache Maven Dependencies'
@@ -34,14 +33,12 @@ stages:
           maven | "$(Agent.OS)"
         path: $(HOME)/.m2/repository
 
-
-    # Build + Test
+    # Build & Test
     - task: Maven@4
       displayName: 'Build & Test Application'
       inputs:
         mavenPomFile: 'pom.xml'
         goals: 'clean package'
-
 
     # Publish Test Results
     - task: PublishTestResults@2
@@ -50,8 +47,7 @@ stages:
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
         testRunTitle: 'Spring Boot Unit Tests'
 
-
-    # Publish JAR Artifact
+    # Publish Artifact
     - task: PublishBuildArtifacts@1
       displayName: 'Publish JAR Artifact'
       inputs:
@@ -59,31 +55,25 @@ stages:
         ArtifactName: 'spring-boot-app'
         publishLocation: 'Container'
 
-
-
+# ==========================
+# Docker Stage
+# ==========================
 - stage: Docker
   displayName: 'Docker Build Security Scan Push'
 
   dependsOn: Build
 
-
   jobs:
-
   - job: DockerBuild
     displayName: 'Docker Build'
 
-
     steps:
 
-
     - checkout: self
-
-
 
     # Docker Build
     - task: Docker@2
       displayName: 'Build Docker Image'
-
       inputs:
         command: build
         Dockerfile: '**/Dockerfile'
@@ -92,53 +82,27 @@ stages:
           $(imageTag)
           latest
 
-
-
-    # Trivy Install
+    # Trivy Scan
     - script: |
-
-        sudo apt-get update
-
-        sudo apt-get install -y wget apt-transport-https gnupg
-
-        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-
-        echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
-
-        sudo apt-get update
-
-        sudo apt-get install -y trivy
-
-      displayName: 'Install Trivy'
-
-
-
-    # Image Vulnerability Scan
-    - script: |
-
-        trivy image \
-        --severity HIGH,CRITICAL \
-        --format table \
-        --exit-code 0 \
-        $(imageName):$(imageTag)
-
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy:0.72.0 \
+          image \
+          --severity HIGH,CRITICAL \
+          --format table \
+          --no-progress \
+          --skip-version-check \
+          --exit-code 0 \
+          $(imageName):$(imageTag)
       displayName: 'Trivy Image Vulnerability Scan'
 
-
-
-    # Docker Hub Login + Push
+    # Push Docker Image
     - task: Docker@2
-
       displayName: 'Push Docker Image'
-
       inputs:
-
         command: push
-
         containerRegistry: 'dockerhub-connection'
-
         repository: $(imageName)
-
         tags: |
           $(imageTag)
           latest
