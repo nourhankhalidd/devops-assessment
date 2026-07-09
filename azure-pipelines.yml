@@ -1,0 +1,29 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  javaVersion: '17'
+
+steps:
+- checkout: self
+
+- task: JavaToolInstaller@0
+  displayName: 'Install Java 17'
+  inputs:
+    versionSpec: $(javaVersion)
+    jdkArchitectureOption: x64
+    jdkSourceOption: PreInstalled
+
+- task: Maven@4
+  displayName: 'Build Spring Boot Application'
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'clean package'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
+    mavenVersionOption: 'Default'
