@@ -11,6 +11,8 @@ RUN apt-get update \
        apt-transport-https \
        lsb-release \
        gnupg \
+       openjdk-17-jdk \
+       maven \
     && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI, so pipeline steps can build/push images using the host's Docker daemon
