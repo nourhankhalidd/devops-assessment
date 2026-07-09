@@ -32,9 +32,11 @@ stages:
 - stage: DockerBuild
   displayName: 'Build Docker Image'
   dependsOn: Build
+
   jobs:
   - job: Docker
     displayName: 'Docker Build'
+
     steps:
 
     - checkout: self
@@ -45,4 +47,13 @@ stages:
         command: build
         Dockerfile: '**/Dockerfile'
         tags: |
-          assessment-app:$(Build.BuildId)
+          nourhankhalidd/assessment:$(Build.BuildId)
+
+    - task: Docker@2
+      displayName: 'Push Docker Image'
+      inputs:
+        command: push
+        containerRegistry: 'dockerhub-connection'
+        repository: 'nourhankhalidd/assessment'
+        tags: |
+          $(Build.BuildId)
