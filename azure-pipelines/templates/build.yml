@@ -1,0 +1,57 @@
+stages:
+
+- stage: Build
+  displayName: 'Build, Test & Sonar Analysis'
+
+  jobs:
+
+  - job: MavenBuild
+    displayName: 'Build Spring Boot Application'
+
+    steps:
+
+    - checkout: self
+      fetchDepth: 0
+
+    - task: Cache@2
+      displayName: 'Cache Maven Dependencies'
+      inputs:
+        key: 'maven | "$(Agent.OS)" | pom.xml'
+        restoreKeys: |
+          maven | "$(Agent.OS)"
+        path: $(HOME)/.m2/repository
+
+    - task: SonarCloudPrepare@3
+      displayName: 'Prepare SonarCloud Analysis'
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'nourhankhalidd'
+        scannerMode: 'other'
+        extraProperties: |
+          sonar.projectKey=nourhankhalidd_devops-assessment
+          sonar.projectName=devops-assessment
+
+    - task: Maven@4
+      displayName: 'Build & Test'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean verify'
+        sonarQubeRunAnalysis: true
+
+    - task: SonarCloudPublish@3
+      displayName: 'Publish Quality Gate'
+      inputs:
+        pollingTimeoutSec: '300'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      inputs:
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        testRunTitle: 'Spring Boot Unit Tests'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish JAR Artifact'
+      inputs:
+        PathtoPublish: 'target'
+        ArtifactName: 'spring-boot-app'
+        publishLocation: 'Container'
