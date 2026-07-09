@@ -48,7 +48,8 @@ stages:
         Dockerfile: '**/Dockerfile'
         repository: 'nourhankhalidd/assessment'
         tags: |
-          $(Build.BuildId)
+          build-$(Build.BuildId)
+          latest
 
     - task: Docker@2
       displayName: 'Push Docker Image'
@@ -57,4 +58,6 @@ stages:
         containerRegistry: 'dockerhub-connection'
         repository: 'nourhankhalidd/assessment'
         tags: |
-          $(Build.BuildId)
+          build-$(Build.BuildId)
+          latest
+          
