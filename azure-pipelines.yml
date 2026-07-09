@@ -14,15 +14,16 @@ stages:
 # Build Stage
 # ==========================
 - stage: Build
-  displayName: 'Build Spring Boot Application'
+  displayName: 'Build, Test & Sonar Analysis'
 
   jobs:
   - job: MavenBuild
-    displayName: 'Maven Build'
+    displayName: 'Build Spring Boot Application'
 
     steps:
 
     - checkout: self
+      fetchDepth: 0
 
     # Maven Cache
     - task: Cache@2
@@ -33,12 +34,30 @@ stages:
           maven | "$(Agent.OS)"
         path: $(HOME)/.m2/repository
 
-    # Build & Test
+    # Prepare SonarCloud
+    - task: SonarCloudPrepare@3
+      displayName: 'Prepare SonarCloud Analysis'
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'nourhankhalidd'
+        scannerMode: 'other'
+        extraProperties: |
+          sonar.projectKey=nourhankhalidd_devops-assessment
+          sonar.projectName=devops-assessment
+
+    # Build + Test + Sonar Analysis
     - task: Maven@4
-      displayName: 'Build & Test Application'
+      displayName: 'Build & Test'
       inputs:
         mavenPomFile: 'pom.xml'
-        goals: 'clean package'
+        goals: 'clean verify'
+        sonarQubeRunAnalysis: true
+
+    # Publish Quality Gate
+    - task: SonarCloudPublish@3
+      displayName: 'Publish Quality Gate'
+      inputs:
+        pollingTimeoutSec: '300'
 
     # Publish Test Results
     - task: PublishTestResults@2
@@ -47,7 +66,7 @@ stages:
         testResultsFiles: '**/surefire-reports/TEST-*.xml'
         testRunTitle: 'Spring Boot Unit Tests'
 
-    # Publish Artifact
+    # Publish JAR
     - task: PublishBuildArtifacts@1
       displayName: 'Publish JAR Artifact'
       inputs:
@@ -59,11 +78,12 @@ stages:
 # Docker Stage
 # ==========================
 - stage: Docker
-  displayName: 'Docker Build Security Scan Push'
+  displayName: 'Docker Build, Security Scan & Push'
 
   dependsOn: Build
 
   jobs:
+
   - job: DockerBuild
     displayName: 'Docker Build'
 
@@ -71,7 +91,7 @@ stages:
 
     - checkout: self
 
-    # Docker Build
+    # Build Docker Image
     - task: Docker@2
       displayName: 'Build Docker Image'
       inputs:
