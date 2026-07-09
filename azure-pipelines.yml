@@ -106,8 +106,10 @@ stages:
     - script: |
         docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
+          -v trivy-cache:/root/.cache/trivy \
           aquasec/trivy:0.72.0 \
           image \
+          --scanners vuln \
           --severity HIGH,CRITICAL \
           --format table \
           --no-progress \
