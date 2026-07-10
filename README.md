@@ -340,6 +340,14 @@ The service forwards incoming traffic from port **80** to the application runnin
 #### 📸 Verify K8s
 ![Localhosted](images/k8s.png)
 
+### Rollout K8s
+
+To Pull the latest image from Docker Hub 
+
+```text
+kubectl rollout restart deployment assessment-app
+```
+
 
 ### 6. 🔐 Secure Secret Management with Sealed Secrets
 
