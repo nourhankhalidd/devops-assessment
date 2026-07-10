@@ -23,6 +23,35 @@ This project demonstrates a complete CI pipeline for a Spring Boot application u
 * Prometheus
 * Grafana
 
+## 🏗️  Architecture
+
+```mermaid
+flowchart LR
+
+A[Developer] -->|Push Code| B[GitHub Repository]
+B --> C[Azure DevOps Pipeline]
+C --> D[Self-Hosted Linux Agent]
+
+D --> E[Maven Build & Unit Tests]
+E --> F[SonarCloud Analysis]
+F --> G[Docker Build]
+G --> H[Trivy Security Scan]
+H --> I[Docker Hub]
+
+I --> J[Kubernetes Cluster]
+
+J --> K[Deployment]
+J --> L[Service]
+J --> M[Sealed Secrets]
+
+K --> N[Spring Boot Application]
+
+N --> O["Spring Boot Actuator (/actuator/prometheus)"]
+
+O --> P[Prometheus]
+P --> Q[Grafana Dashboard]
+```
+
 ## 📑 Steps 
 ### 1. 🖥️ Run the Application Locally
 
