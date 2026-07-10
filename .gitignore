@@ -52,5 +52,6 @@ Thumbs.db
 # Secret file
 kubernetes/secret.yaml
 
+# My Agent 
 myagent/
 target/
