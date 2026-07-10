@@ -1,3 +1,9 @@
+stages:
+
+- stage: Docker
+  displayName: 'Docker Build & Scan'
+
+  jobs:
 
   - job: DockerBuild
     displayName: 'Docker Build'
