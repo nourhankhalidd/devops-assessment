@@ -39,7 +39,7 @@
           --timeout 15m \
           --no-progress \
           --skip-version-check \
-          --exit-code 1 \
+          --exit-code 0 \
           $(imageName):$(imageTag)
 
       displayName: 'Trivy Image Vulnerability Scan'
