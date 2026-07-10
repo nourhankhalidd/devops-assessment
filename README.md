@@ -209,28 +209,32 @@ Code quality analysis is integrated directly into the CI pipeline using **SonarC
 
 During each pipeline execution, SonarCloud analyzes the Java source code and evaluates:
 
-* Bugs
-* Vulnerabilities
-* Code Smells
-* Security Hotspots
-* Code Coverage
-* Maintainability
-* Reliability
+- Bugs
+- Vulnerabilities
+- Code Smells
+- Security Hotspots
+- Code Coverage
+- Maintainability
+- Reliability
 
-The pipeline waits for the Quality Gate result before continuing.
+The pipeline waits for the **Quality Gate** result before continuing.
 
-If the configured Quality Gate fails (for example, due to blocker or critical issues), the pipeline can be configured to stop before continuing to the next stages.
+The configured Quality Gate verifies that the project satisfies the defined quality criteria, such as:
+- No new blocker or critical issues
+- No new security vulnerabilities
+- Acceptable code quality standards
+
+If the Quality Gate fails, the pipeline can be configured to stop before proceeding to the next stages, preventing low-quality code from being promoted.
 
 The analysis results can be viewed from:
-
-* Azure DevOps Pipeline Summary
-* SonarCloud Project Dashboard
+- **Azure DevOps Pipeline Summary**, where the SonarCloud task reports the Quality Gate status.
+- **SonarCloud Project Dashboard**, which provides detailed information about Bugs, Vulnerabilities, Code Smells, Coverage, Duplications, and Security Hotspots.
 
 This ensures that only code meeting the defined quality standards proceeds through the CI/CD workflow.
 
 ##### 📸 SonarCloud Dashboard
 
-![Sonar Cloud](images/Sonarcloud.png)
+![SonarCloud Dashboard](images/Sonarcloud.png)
 
 ### 3.3 🐳 Docker Build, Security Scan & Image Publishing
 
@@ -397,6 +401,26 @@ When the Sealed Secrets controller detects the `SealedSecret` resource inside th
 
 This ensures that no plaintext secrets are ever stored in version control while still allowing fully automated Kubernetes deployments.
 
+### The same process is used whenever a new application secret is required. Create a regular Kubernetes Secret, encrypt it using `kubeseal`, delete the plaintext Secret, and commit only the generated `SealedSecret` to the repository.
+#### Rotating a Secret
+
+When a secret value needs to be updated (for example, when rotating credentials), a new Kubernetes Secret is created with the updated value, then sealed again using `kubeseal`.
+
+```bash
+kubectl create secret generic assessment-secret \
+  --from-literal=APP_SECRET=<new-secret> \
+  --dry-run=client -o yaml > secret.yaml
+
+kubeseal \
+  --format yaml \
+  < secret.yaml \
+  > sealed-secret.yaml
+```
+
+The updated `sealed-secret.yaml` is committed to the Git repository, and after it is applied to the cluster, the Sealed Secrets controller automatically recreates the Kubernetes Secret with the new value.
+
+This allows secrets to be rotated safely without exposing sensitive data in source control.
+
 ### 7. 📊 Monitoring & Observability
 
 To monitor the deployed Spring Boot application, a lightweight observability stack was configured using **Prometheus** and **Grafana**.
@@ -450,7 +474,7 @@ docker compose down
 
 #### Prometheus Configuration
 
-Prometheus is configured to scrape the Spring Boot application's metrics endpoint every **15 seconds**.
+Prometheus periodically scrapes the /actuator/prometheus endpoint every 15 seconds, stores the collected metrics as time-series data, and makes them available for visualization in Grafana.
 
 The metrics are collected from:
 
@@ -483,6 +507,14 @@ Grafana:
 ```text
 http://localhost:3000
 ```
+Default credentials:
+
+```text
+Username: admin
+Password: admin
+```
+
+> Grafana prompts for a password change on the first login.
 
 The Grafana dashboard automatically retrieves data from Prometheus and displays live metrics collected from the Spring Boot application.
 #### 📸 Prometheus 
