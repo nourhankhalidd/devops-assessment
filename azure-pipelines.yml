@@ -14,3 +14,7 @@ stages:
 - template: azure-pipelines/templates/build.yml
 
 - template: azure-pipelines/templates/docker.yml
+
+
+
+

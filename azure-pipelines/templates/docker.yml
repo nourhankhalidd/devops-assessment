@@ -1,54 +1,56 @@
-stage: Docker
-displayName: 'Docker Build, Security Scan & Push'
+- stage: Docker
+  displayName: 'Docker Build, Security Scan & Push'
 
-dependsOn: Build
+  dependsOn: Build
 
-jobs:
-- job: DockerBuild
-  displayName: 'Docker Build'
+  jobs:
 
-  steps:
+  - job: DockerBuild
+    displayName: 'Docker Build'
 
-  - checkout: self
+    steps:
 
-  - task: Docker@2
-    displayName: 'Build Docker Image'
-    inputs:
-      command: build
-      Dockerfile: '**/Dockerfile'
-      repository: $(imageName)
-      tags: |
-        $(imageTag)
-        latest
+    - checkout: self
 
 
-  - script: |
-
-      docker volume create trivy-cache || true
-
-      docker run --rm \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v trivy-cache:/root/.cache/trivy \
-        aquasec/trivy:0.72.0 \
-        image \
-        --scanners vuln \
-        --severity HIGH,CRITICAL \
-        --format table \
-        --timeout 15m \
-        --no-progress \
-        --skip-version-check \
-        --exit-code 0 \
-        $(imageName):$(imageTag)
-
-    displayName: 'Trivy Image Vulnerability Scan'
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: build
+        Dockerfile: '**/Dockerfile'
+        repository: $(imageName)
+        tags: |
+          $(imageTag)
+          latest
 
 
-  - task: Docker@2
-    displayName: 'Push Docker Image'
-    inputs:
-      command: push
-      containerRegistry: 'dockerhub-connection'
-      repository: $(imageName)
-      tags: |
-        $(imageTag)
-        latest
+    - script: |
+
+        docker volume create trivy-cache || true
+
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v trivy-cache:/root/.cache/trivy \
+          aquasec/trivy:0.72.0 \
+          image \
+          --scanners vuln \
+          --severity HIGH,CRITICAL \
+          --format table \
+          --timeout 15m \
+          --no-progress \
+          --skip-version-check \
+          --exit-code 1 \
+          $(imageName):$(imageTag)
+
+      displayName: 'Trivy Image Vulnerability Scan'
+
+
+    - task: Docker@2
+      displayName: 'Push Docker Image'
+      inputs:
+        command: push
+        containerRegistry: 'dockerhub-connection'
+        repository: $(imageName)
+        tags: |
+          $(imageTag)
+          latest
