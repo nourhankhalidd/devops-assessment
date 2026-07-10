@@ -257,6 +257,8 @@ The pipeline is configured to report **High** and **Critical** vulnerabilities b
 
 This automated security scan helps identify vulnerable packages early in the CI pipeline and supports DevSecOps best practices.
 
+For demonstration purposes, Trivy is configured with --exit-code 0 to report vulnerabilities without failing the pipeline. In production, this should be changed to --exit-code 1 to enforce a security gate.
+
 #### 📸 Trivy Checks
 
 ![Trivy](images/Trivy-Checks.png)
