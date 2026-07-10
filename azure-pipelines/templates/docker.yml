@@ -46,3 +46,4 @@ stages:
         tags: |
           $(imageTag)
           latest
+          
