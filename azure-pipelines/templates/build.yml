@@ -1,5 +1,3 @@
-stages:
-
 - stage: Build
   displayName: 'Build, Test & Sonar Analysis'
 
