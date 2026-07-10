@@ -1,6 +1,7 @@
 
 <h1 align="center">⚙️ Azure DevOps CI/CD Assessment ⚙️</h1>
 
+
 ## 📖 Project Overview
 
 This project demonstrates a complete CI pipeline for a Spring Boot application using Azure DevOps. The application is containerized with Docker, analyzed for code quality using SonarCloud, scanned for vulnerabilities using Trivy, deployed to Kubernetes, and monitored using Prometheus and Grafana.
